@@ -1,21 +1,22 @@
-// Create a map object
+// Initialize the map on the "map" div with a given center and zoom level
 var myMap = L.map("map", {
     center: [37.09, -95.71],
     zoom: 5
   });
   
-  // Add a base layer
+  // Add a base map layer
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors"
   }).addTo(myMap);
   
-  // Function to determine marker size based on earthquake magnitude
+  // Function to determine the size of the marker based on the earthquake's magnitude
   function markerSize(magnitude) {
     return magnitude * 5;
   }
   
-  // Function to determine marker color based on earthquake depth
+  // Function to choose the color of the marker based on the earthquake's depth
   function markerColor(depth) {
+    // This function assumes depth is a number representing the depth in kilometers
     return depth > 90 ? '#EA2C2C' :
            depth > 70 ? '#EA822C' :
            depth > 50 ? '#EE9C00' :
@@ -24,70 +25,30 @@ var myMap = L.map("map", {
                         '#98EE00';
   }
   
-  // Get GeoJSON and plot it
+  // Fetch the GeoJSON data
   d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson", function(earthquakeData) {
-    // Create a GeoJSON layer with the retrieved data
-    L.geoJSON(earthquakeData, {
-      // Create circle markers
-      pointToLayer: function(feature, latlng) {
-        var geojsonMarkerOptions = {
-          radius: markerSize(feature.properties.mag),
-          fillColor: markerColor(feature.geometry.coordinates[2]),
-          color: "#000",
-          weight: 1,
-          opacity: 1,
-          fillOpacity: 0.8
-        };
-        var marker = L.circleMarker(latlng, geojsonMarkerOptions);
+    // Check that the data is loaded
+    console.log(earthquakeData);
   
-        animateMarker(marker);
+    // Create a marker for the first earthquake feature
+    var firstFeature = earthquakeData.features[0];
+    var coords = firstFeature.geometry.coordinates;
+    var magnitude = firstFeature.properties.mag;
+    var depth = coords[2]; // The depth is the third item in the coordinates array
   
-        return marker;
-      },
-      // Create popups
-      onEachFeature: function(feature, layer) {
-        layer.bindPopup("<h3>" + feature.properties.place +
-          "</h3><hr><p>" + new Date(feature.properties.time) + "</p>" +
-          "<p>Magnitude: " + feature.properties.mag + "</p>" +
-          "<p>Depth: " + feature.geometry.coordinates[2] + " km</p>");
-      }
+    // Create a circle marker with the appropriate size and color
+    var earthquakeMarker = L.circleMarker([coords[1], coords[0]], { // latitude, longitude
+      radius: markerSize(magnitude),
+      fillColor: markerColor(depth),
+      color: "#000",
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.8
     }).addTo(myMap);
   
-    // Set up the legend
-    var legend = L.control({ position: "bottomright" });
-    legend.onAdd = function() {
-      var div = L.DomUtil.create('div', 'info legend'),
-          depths = [-10, 10, 30, 50, 70, 90],
-          labels = [];
-  
-      // loop through our depth intervals and generate a label with a colored square for each interval
-      for (var i = 0; i < depths.length; i++) {
-          div.innerHTML +=
-              '<i style="background:' + markerColor(depths[i] + 1) + '"></i> ' +
-              depths[i] + (depths[i + 1] ? '&ndash;' + depths[i + 1] + ' km<br>' : '+ km');
-      }
-  
-      return div;
-    };
-  
-    // Adding legend to the map
-    legend.addTo(myMap);
+    // Bind a popup to the marker with some of the earthquake's data
+    earthquakeMarker.bindPopup("Magnitude: " + magnitude + "<br>Depth: " + depth + "<br>Location: " + firstFeature.properties.place);
   });
   
-  // Function to animate the markers
-  function animateMarker(marker) {
-    var originalRadius = marker.options.radius;
-    var pulsing = false;
-  
-    setInterval(function() {
-      var radius = marker.getRadius();
-      if (radius > originalRadius * 1.3) {
-        pulsing = false;
-      } else if (radius < originalRadius * 0.7) {
-        pulsing = true;
-      }
-      var nextRadius = pulsing ? radius * 1.1 : radius * 0.9;
-      marker.setRadius(nextRadius);
-    }, 200);
-  }
+  // You can omit the legend and animation for this minimal example to focus on getting one marker to show up
   

@@ -4,6 +4,10 @@
   This project takes data from the USGS JSON feed for the past week's earthquake data and incorporates it into an interactive visual map using D3, JSON, HTML, CSS, and Javascript. Earthquakes are plotted by size and depth, with greater depth indicated by darker colors and greater magnitude indicated by larger circle size. Additional information can be found on click.
 </p>
 
+<p align="center">
+  Map Preview
+</p>
+
 ![image](https://github.com/llang777/leaflet-challenge/assets/146140759/5fabc466-8ae6-4c63-9408-489d558d7dd2)
 
 

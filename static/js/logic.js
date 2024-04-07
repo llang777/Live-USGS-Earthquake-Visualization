@@ -3,7 +3,7 @@ var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_we
 
 // Function to determine the marker size based on the earthquake magnitude
 function markerSize(magnitude) {
-  return magnitude * 4;
+  return magnitude * 4; // Adjust the multiplier as needed for visual effect
 }
 
 // Function to determine the marker color based on the earthquake depth
@@ -24,7 +24,8 @@ d3.json(queryUrl).then(function(data) {
 function createFeatures(earthquakeData) {
   // Define a function for each feature to bind a popup
   function onEachFeature(feature, layer) {
-    layer.bindPopup("<h3>Location: " + feature.properties.place + "</h3><hr><p>Date: " + new Date(feature.properties.time) +
+    layer.bindPopup("<h3>Location: " + feature.properties.place +
+      "</h3><hr><p>Date: " + new Date(feature.properties.time) +
       "</p><p>Magnitude: " + feature.properties.mag + "</p><p>Depth: " + feature.geometry.coordinates[2] + " km</p>");
   }
 
@@ -65,14 +66,28 @@ function createMap(earthquakes) {
   legend.onAdd = function() {
     var div = L.DomUtil.create('div', 'info legend'),
       depths = [-10, 10, 30, 50, 70, 90],
-      labels = [];
+      colors = [
+        "lightgreen",
+        "yellow",
+        "gold",
+        "orange",
+        "orangered",
+        "red"
+      ],
+      names = [
+        "0-10: Light Green",
+        "10-30: Yellow",
+        "30-50: Gold",
+        "50-70: Orange",
+        "70-90: Orangered",
+        "90+: Red"
+      ];
 
     div.innerHTML += '<h3>Depth</h3>'
-
     for (var i = 0; i < depths.length; i++) {
       div.innerHTML +=
-        '<i style="background:' + markerColor(depths[i] + 1) + '"></i> ' +
-        depths[i] + (depths[i + 1] ? '&ndash;' + depths[i + 1] + '<br>' : '+');
+        '<i style="background:' + colors[i] + '"></i> ' +
+        names[i] + '<br>';
     }
 
     return div;

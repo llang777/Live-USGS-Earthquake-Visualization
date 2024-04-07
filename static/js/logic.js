@@ -1,13 +1,13 @@
-// Define the API endpoint URL for the earthquake data
+// API endpoint
 var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
 
-// Function to determine the marker size based on the earthquake magnitude
+// marker size
 function markerSize(magnitude) {
-  return magnitude * 4; // Adjust the multiplier as needed for visual effect
+  return magnitude * 4; 
 }
 
-// Function to determine the marker color based on the earthquake depth
-function markerColor(depth) {
+// maker color scale info
+function colorPlot(depth) {
   if (depth > 90) return "#FF0000";
   else if (depth > 70) return "orangered";
   else if (depth > 50) return "orange";
@@ -16,26 +16,26 @@ function markerColor(depth) {
   else return "lightgreen";
 }
 
-// Perform a GET request to the query URL to get earthquake data
+// get earthquake data
 d3.json(queryUrl).then(function(data) {
-  createFeatures(data.features);
+  functions(data.features);
 });
 
-function createFeatures(earthquakeData) {
-  // Define a function for each feature to bind a popup
+function functions(infoQuake) {
+  // popup function
   function onEachFeature(feature, layer) {
     layer.bindPopup("<h3>Location: " + feature.properties.place +
       "</h3><hr><p>Date: " + new Date(feature.properties.time) +
       "</p><p>Magnitude: " + feature.properties.mag + "</p><p>Depth: " + feature.geometry.coordinates[2] + " km</p>");
   }
 
-  // Create a GeoJSON layer containing the features array
-  var earthquakes = L.geoJSON(earthquakeData, {
+  // geojson layer
+  var earthquakes = L.geoJSON(infoQuake, {
     onEachFeature: onEachFeature,
     pointToLayer: function(feature, latlng) {
       return L.circleMarker(latlng, {
         radius: markerSize(feature.properties.mag),
-        fillColor: markerColor(feature.geometry.coordinates[2]),
+        fillColor: colorPlot(feature.geometry.coordinates[2]),
         color: "#000000",
         weight: 0.5,
         opacity: 1,
@@ -44,24 +44,24 @@ function createFeatures(earthquakeData) {
     }
   });
 
-  // Send earthquakes layer to the createMap function
-  createMap(earthquakes);
+  // layer to function
+  mapGen(earthquakes);
 }
 
-function createMap(earthquakes) {
-  // Define the tile layer for the map background
+function mapGen(earthquakes) {
+  // map background tile layer, we are using open street map
   var lightmap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   });
 
-  // Create the map object with layers
+  // making map w layers
   var myMap = L.map("map", {
     center: [37.09, -95.71],
     zoom: 5,
     layers: [lightmap, earthquakes]
   });
 
-  // Create a legend for the map
+  // creation of legend
   var legend = L.control({ position: "bottomright" });
   legend.onAdd = function() {
     var div = L.DomUtil.create('div', 'info legend'),
@@ -93,6 +93,6 @@ function createMap(earthquakes) {
     return div;
   };
 
-  // Adding legend to the map
+  // add legend to the map
   legend.addTo(myMap);
 }

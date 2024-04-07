@@ -1,54 +1,83 @@
-// Initialize the map on the "map" div with a given center and zoom level
-var myMap = L.map("map", {
+// Define the API endpoint URL for the earthquake data
+var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+
+// Function to determine the marker size based on the earthquake magnitude
+function markerSize(magnitude) {
+  return magnitude * 4;
+}
+
+// Function to determine the marker color based on the earthquake depth
+function markerColor(depth) {
+  if (depth > 90) return "#FF0000";
+  else if (depth > 70) return "orangered";
+  else if (depth > 50) return "orange";
+  else if (depth > 30) return "gold";
+  else if (depth > 10) return "yellow";
+  else return "lightgreen";
+}
+
+// Perform a GET request to the query URL to get earthquake data
+d3.json(queryUrl).then(function(data) {
+  createFeatures(data.features);
+});
+
+function createFeatures(earthquakeData) {
+  // Define a function for each feature to bind a popup
+  function onEachFeature(feature, layer) {
+    layer.bindPopup("<h3>Location: " + feature.properties.place + "</h3><hr><p>Date: " + new Date(feature.properties.time) +
+      "</p><p>Magnitude: " + feature.properties.mag + "</p><p>Depth: " + feature.geometry.coordinates[2] + " km</p>");
+  }
+
+  // Create a GeoJSON layer containing the features array
+  var earthquakes = L.geoJSON(earthquakeData, {
+    onEachFeature: onEachFeature,
+    pointToLayer: function(feature, latlng) {
+      return L.circleMarker(latlng, {
+        radius: markerSize(feature.properties.mag),
+        fillColor: markerColor(feature.geometry.coordinates[2]),
+        color: "#000000",
+        weight: 0.5,
+        opacity: 1,
+        fillOpacity: 0.7
+      });
+    }
+  });
+
+  // Send earthquakes layer to the createMap function
+  createMap(earthquakes);
+}
+
+function createMap(earthquakes) {
+  // Define the tile layer for the map background
+  var lightmap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  });
+
+  // Create the map object with layers
+  var myMap = L.map("map", {
     center: [37.09, -95.71],
-    zoom: 5
+    zoom: 5,
+    layers: [lightmap, earthquakes]
   });
-  
-  // Add a base map layer
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "© OpenStreetMap contributors"
-  }).addTo(myMap);
-  
-  // Function to determine the size of the marker based on the earthquake's magnitude
-  function markerSize(magnitude) {
-    return magnitude * 5;
-  }
-  
-  // Function to choose the color of the marker based on the earthquake's depth
-  function markerColor(depth) {
-    // This function assumes depth is a number representing the depth in kilometers
-    return depth > 90 ? '#EA2C2C' :
-           depth > 70 ? '#EA822C' :
-           depth > 50 ? '#EE9C00' :
-           depth > 30 ? '#EECC00' :
-           depth > 10 ? '#D4EE00' :
-                        '#98EE00';
-  }
-  
-  // Fetch the GeoJSON data
-  d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson", function(earthquakeData) {
-    // Check that the data is loaded
-    console.log(earthquakeData);
-  
-    // Create a marker for the first earthquake feature
-    var firstFeature = earthquakeData.features[0];
-    var coords = firstFeature.geometry.coordinates;
-    var magnitude = firstFeature.properties.mag;
-    var depth = coords[2]; // The depth is the third item in the coordinates array
-  
-    // Create a circle marker with the appropriate size and color
-    var earthquakeMarker = L.circleMarker([coords[1], coords[0]], { // latitude, longitude
-      radius: markerSize(magnitude),
-      fillColor: markerColor(depth),
-      color: "#000",
-      weight: 1,
-      opacity: 1,
-      fillOpacity: 0.8
-    }).addTo(myMap);
-  
-    // Bind a popup to the marker with some of the earthquake's data
-    earthquakeMarker.bindPopup("Magnitude: " + magnitude + "<br>Depth: " + depth + "<br>Location: " + firstFeature.properties.place);
-  });
-  
-  // You can omit the legend and animation for this minimal example to focus on getting one marker to show up
-  
+
+  // Create a legend for the map
+  var legend = L.control({ position: "bottomright" });
+  legend.onAdd = function() {
+    var div = L.DomUtil.create('div', 'info legend'),
+      depths = [-10, 10, 30, 50, 70, 90],
+      labels = [];
+
+    div.innerHTML += '<h3>Depth</h3>'
+
+    for (var i = 0; i < depths.length; i++) {
+      div.innerHTML +=
+        '<i style="background:' + markerColor(depths[i] + 1) + '"></i> ' +
+        depths[i] + (depths[i + 1] ? '&ndash;' + depths[i + 1] + '<br>' : '+');
+    }
+
+    return div;
+  };
+
+  // Adding legend to the map
+  legend.addTo(myMap);
+}

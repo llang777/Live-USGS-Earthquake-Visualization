@@ -10,6 +10,9 @@
 
 ![image](https://github.com/llang777/leaflet-challenge/assets/146140759/5fabc466-8ae6-4c63-9408-489d558d7dd2)
 
+<p align="center">
+  Legend
+</p>
 
 <p align="center">
   <img src="https://github.com/llang777/leaflet-challenge/assets/146140759/0ee0c8db-c71a-4e1c-bf96-c75fab26fab4" alt="Earthquake Data Visualization" title="Earthquake Data Visualization">

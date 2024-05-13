@@ -1,5 +1,5 @@
 <h1 align="center">Project: Earthquake Visualization Animation</h1>
-<h1 align="center">GitHub Pages Site https://llang777.github.io/leaflet-challenge/ </h1>
+<h1 align="center">GitHub Pages Site https://llang777.github.io/Live-USGS-Earthquake-Visualization/ </h1>
 
 <p align="center">
   This project takes data from the USGS JSON feed for the past week's earthquake data and incorporates it into an interactive visual map using D3, JSON, HTML, CSS, and Javascript. Earthquakes are plotted by size and depth, with greater depth indicated by darker colors and greater magnitude indicated by larger circle size. Additional information can be found on click.
